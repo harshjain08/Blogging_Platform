@@ -1,0 +1,123 @@
+
+:root {
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --bg-main: #f8fafc;
+    --bg-card: #ffffff;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --radius: 1rem;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+}
+
+.profile-container {
+    max-width: 1000px;
+    margin: 120px auto 50px;
+    padding: 0 20px;
+}
+
+.profile-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.profile-header {
+    background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 50%, #ffffff 100%);
+    padding: 48px 40px 40px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+}
+
+.avatar-container {
+    position: relative;
+    display: inline-block;
+}
+
+.avatar {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    box-shadow: var(--shadow);
+    object-fit: cover;
+}
+
+.avatar-edit-btn {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.avatar-edit-btn:hover { background: var(--primary-hover); }
+
+.profile-header h1 { margin: 20px 0 5px; font-size: 2rem; }
+.profile-header p { color: var(--text-muted); font-size: 1.1rem; }
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    padding: 24px 40px;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+}
+
+.stat-number { display: block; font-size: 1.8rem; font-weight: 700; color: var(--primary); }
+.stat-label { font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+.profile-content {
+    padding: 32px 40px 36px;
+}
+
+.profile-content h2 {
+    margin: 0 0 20px;
+    font-size: 1.25rem;
+}
+
+.user-blog-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    margin-bottom: 16px;
+    background: #f9fafb;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: 0.3s;
+}
+
+.user-blog-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+}
+
+.user-blog-item img { width: 120px; height: 80px; border-radius: 8px; object-fit: cover; }
+
+.view-blog-btn, .edit-blog-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.view-blog-btn { background: var(--primary); color: white; border: none; }
+.delete-blog-btn { background: #fee2e2; color: #ef4444; border: none; padding: 8px 16px; border-radius: 6px; }

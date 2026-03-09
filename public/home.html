@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlogStation - Share Your Stories</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/home.css">
+
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <span class="logo-text">Blog</span><span class="logo-accent">Station</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="/" class="nav-link active">Home</a></li>
+                <li><a href="/login" class="nav-link" id="login-link">Login</a></li>
+                <li><a href="/signup" class="nav-link btn-signup" id="signup-link">Sign Up</a></li>
+                <li><a href="/profile" class="nav-link" id="profile-link" style="display:none;">Profile</a></li>
+                <li><a href="#" class="nav-link" id="logout-link" style="display:none;">Logout</a></li>
+            </ul>
+            <div class="mobile-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <span class="hero-tag">Welcome to</span>
+            <h1 class="hero-title">
+                <span class="title-line">Share Your</span>
+                <span class="title-line accent">Stories</span>
+            </h1>
+            <p class="hero-subtitle">A platform for writers to express their thoughts and connect with readers worldwide.</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary action-btn" onclick="handleWriteClick(event)">
+                    <span class="btn-icon">✍️</span>
+                    Start Writing
+                </button>
+                <button class="btn btn-secondary" onclick="handleReadClick(event)">
+                    <span class="btn-icon">📖</span>
+                    Read Blogs
+                </button>
+            </div>
+        </div>
+        <div class="hero-scroll">
+            <span>Scroll to explore</span>
+            <div class="scroll-indicator"></div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <div class="features-grid">
+                <div class="feature-card" onclick="handleWriteClick(event)">
+                    <div class="feature-icon">✍️</div>
+                    <h3>Write</h3>
+                    <p>Express your thoughts with our beautiful editor</p>
+                    <span class="feature-cta">Start Writing →</span>
+                </div>
+                <div class="feature-card" onclick="handleReadClick(event)">
+                    <div class="feature-icon">🌍</div>
+                    <h3>Discover</h3>
+                    <p>Explore stories from writers worldwide</p>
+                    <span class="feature-cta">Browse Blogs →</span>
+                </div>
+                <div class="feature-card" onclick="window.location.href='/signup'">
+                    <div class="feature-icon">👥</div>
+                    <h3>Join</h3>
+                    <p>Connect with a community of passionate writers</p>
+                    <span class="feature-cta">Sign Up Free →</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">How It Works</span>
+                <h2 class="section-title">Start Your Writing Journey</h2>
+            </div>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Create Account</h3>
+                    <p>Sign up for free and set up your writer profile</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>Write Your Story</h3>
+                    <p>Use our easy editor to create beautiful blogs</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Share & Connect</h3>
+                    <p>Publish your work and connect with readers</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number">10K+</span>
+                    <span class="stat-label">Writers</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">50K+</span>
+                    <span class="stat-label">Stories</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">1M+</span>
+                    <span class="stat-label">Readers</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Share Your Story?</h2>
+                <p>Join thousands of writers and start publishing today.</p>
+                <a href="/signup" class="btn btn-primary btn-large">Get Started Free</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="/" class="logo">
+                        <span class="logo-text">Blog</span><span class="logo-accent">Station</span>
+                    </a>
+                    <p>A platform for writers to share their stories with the world.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-col">
+                        <h4>Platform</h4>
+                        <a href="/">Home</a>
+                        <a href="/login">Login</a>
+                        <a href="/signup">Sign Up</a>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Company</h4>
+                        <a href="#">About</a>
+                        <a href="#">Contact</a>
+                        <a href="#">Careers</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 BlogStation. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
+
+    <script src="/js/firebase.js"></script>
+    <script>
+        // Handle Write button click - require login
+        function handleWriteClick(e) {
+            e.preventDefault();
+            
+            if (typeof auth !== 'undefined') {
+                auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        window.location.href = '/editor';
+                    } else {
+                        // Store intended destination
+                        sessionStorage.setItem('redirectAfterLogin', '/editor');
+                        window.location.href = '/login';
+                    }
+                });
+            } else {
+                sessionStorage.setItem('redirectAfterLogin', '/editor');
+                window.location.href = '/login';
+            }
+        }
+
+        // Handle Read button click - require login
+        function handleReadClick(e) {
+            e.preventDefault();
+            
+            if (typeof auth !== 'undefined') {
+                auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        window.location.href = '/blog';
+                    } else {
+                        // Store intended destination
+                        sessionStorage.setItem('redirectAfterLogin', '/blog');
+                        window.location.href = '/login';
+                    }
+                });
+            } else {
+                sessionStorage.setItem('redirectAfterLogin', '/blog');
+                window.location.href = '/login';
+            }
+        }
+                sessionStorage.setItem('redirectAfterLogin', '/blog');
+                window.location.href = '/login';
+            }
+        }
+
+        // For feature cards - Write
+        function checkAuthAndWrite() {
+            if (typeof auth !== 'undefined') {
+                auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        window.location.href = '/editor';
+                    } else {
+                        sessionStorage.setItem('redirectAfterLogin', '/editor');
+                        window.location.href = '/login';
+                    }
+                });
+            } else {
+                sessionStorage.setItem('redirectAfterLogin', '/editor');
+                window.location.href = '/login';
+            }
+        }
+
+        // For feature cards - Read
+        function checkAuthAndRead() {
+            if (typeof auth !== 'undefined') {
+                auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        window.location.href = '/blog';
+                    } else {
+                        sessionStorage.setItem('redirectAfterLogin', '/blog');
+                        window.location.href = '/login';
+                    }
+                });
+            } else {
+                sessionStorage.setItem('redirectAfterLogin', '/blog');
+                window.location.href = '/login';
+            }
+        }
+
+        // Update feature card click handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.feature-card');
+            if (cards[0]) {
+                cards[0].onclick = function() { handleWriteClick(new Event('click')); };
+            }
+            if (cards[1]) {
+                cards[1].onclick = function() { handleReadClick(new Event('click')); };
+            }
+        });
+    </script>
+    
+</body>
+</html>
+
