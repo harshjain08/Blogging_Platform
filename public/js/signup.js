@@ -7,10 +7,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Check if user is already logged in - redirect to blog page
+        // Check if user is already logged in
         auth.onAuthStateChanged((user) => {
             if (user) {
-                window.location.href = '/blog';
+                const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+                sessionStorage.removeItem('redirectAfterLogin');
+                if (redirectUrl) {
+                    window.location.replace(redirectUrl);
+                } else {
+                    window.location.replace('/blog');
+                }
                 return;
             }
         });
@@ -66,18 +72,18 @@ document.addEventListener('DOMContentLoaded', () => {
                                 // Check for stored redirect URL
                                 const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
                                 sessionStorage.removeItem('redirectAfterLogin');
-                                window.location.href = redirectUrl || '/blog';
+                                window.location.replace(redirectUrl || '/blog');
                             }).catch((error) => {
                                 console.error('Error creating user profile:', error);
                                 // Still redirect even if Firestore fails
-                                window.location.href = '/blog';
+                                window.location.replace('/blog');
                             });
                         } else {
-                            window.location.href = '/blog';
+                            window.location.replace('/blog');
                         }
                     }).catch((error) => {
                         console.error('Error updating profile:', error);
-                        window.location.href = '/blog';
+                        window.location.replace('/blog');
                     });
                 })
                 .catch((error) => {
@@ -89,11 +95,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<span>Create Account</span><span class="btn-arrow">→</span>';
                 });
-        });
+            });
+        }
     }
 
     initSignup();
 });
+
 function getErrorMessage(errorCode) {
     switch (errorCode) {
         case 'auth/email-already-in-use':

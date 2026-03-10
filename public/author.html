@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/blog-station.png">
+    <title>Author Profile - BlogStation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/home.css">
+    <link rel="stylesheet" href="/css/profile.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+<a href="/" class="logo">
+                <img src="/img/blog-station.png" alt="BlogStation" class="logo-img">
+                <span class="logo-text">Blog</span><span class="logo-accent">Station</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="/blog" class="nav-link">Home</a></li>
+                <li><a href="/editor" class="nav-link">Write</a></li>
+                <li><a href="/profile" class="nav-link">Profile</a></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn-logout">Logout</a></li>
+            </ul>
+            <div class="mobile-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="profile-container">
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="avatar-container">
+                    <img src="" id="author-avatar" class="avatar" alt="Author" style="display:none;">
+                    <div class="avatar-placeholder" style="display:none; width:130px; height:130px; border-radius:50%; background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); align-items:center; justify-content:center; font-size:3rem; color:white; font-weight:bold;">
+                        <span id="author-avatar-initial">A</span>
+                    </div>
+                </div>
+                <h1 id="author-name">Loading...</h1>
+                <p id="author-bio"></p>
+            </div>
+
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="blogs-count">0</span>
+                    <span class="stat-label">Blogs</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="views-count">0</span>
+                    <span class="stat-label">Total Views</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="followers-count">0</span>
+                    <span class="stat-label">Followers</span>
+                </div>
+            </div>
+
+            <div class="profile-content">
+                <h2>Latest Posts</h2>
+                <div id="author-blogs" class="user-blogs-list">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-inner">
+                <a href="/" class="footer-logo">
+                    <span class="logo-text">Blog</span><span class="logo-accent">Station</span>
+                </a>
+                <nav class="footer-nav">
+                    <a href="/blog">Home</a>
+                    <a href="/editor">Write</a>
+                    <a href="/profile">Profile</a>
+                </nav>
+                <p class="footer-copy">&copy; 2026 BlogStation. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
+    <script src="/js/firebase.js"></script>
+    <script>
+        // Author Profile Page
+        let currentUser = null;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const initAuthorPage = () => {
+                if (!auth || !db) {
+                    setTimeout(initAuthorPage, 100);
+                    return;
+                }
+                
+                // Get author ID from URL
+                const authorId = decodeURI(location.pathname.split("/").pop());
+                
+                if (!authorId || authorId === '' || authorId === 'author' || authorId === 'author.html') {
+                    window.location.replace('/blog');
+                    return;
+                }
+                
+                loadAuthorProfile(authorId);
+                
+                // Setup logout
+                const logoutBtn = document.getElementById('logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        auth.signOut().then(() => window.location.replace('/login'));
+                    });
+                }
+            };
+            
+            initAuthorPage();
+        });
+
+        function loadAuthorProfile(authorId) {
+            // Load author data
+            db.collection('users').doc(authorId).get()
+                .then(doc => {
+                    if (!doc.exists) {
+                        showAuthorError('Author not found');
+                        return;
+                    }
+                    
+                    const authorData = doc.data();
+                    
+                    // Set author name
+                    document.getElementById('author-name').textContent = authorData.name || 'Anonymous';
+                    document.title = (authorData.name || 'Author') + ' - BlogStation';
+                    
+                    // Set avatar - check multiple sources
+                    const avatarImg = document.getElementById('author-avatar');
+                    const avatarPlaceholder = document.querySelector('.avatar-placeholder');
+                    const avatarInitial = document.getElementById('author-avatar-initial');
+                    
+                    // Show placeholder with initial first
+                    if (avatarInitial && authorData.name) {
+                        avatarInitial.textContent = authorData.name.charAt(0).toUpperCase();
+                    }
+                    if (avatarPlaceholder) {
+                        avatarPlaceholder.style.display = 'flex';
+                    }
+                    avatarImg.style.display = 'none';
+                    
+                    if (authorData.photoURL) {
+                        avatarImg.src = authorData.photoURL;
+                        avatarImg.onload = function() {
+                            avatarImg.style.display = 'block';
+                            if (avatarPlaceholder) avatarPlaceholder.style.display = 'none';
+                        };
+                        avatarImg.onerror = function() {
+                            avatarImg.style.display = 'none';
+                            if (avatarPlaceholder) avatarPlaceholder.style.display = 'flex';
+                        };
+                    } else if (authorData.name) {
+                        // Generate avatar from initials if no photo
+                        avatarImg.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%233498db" width="100" height="100" rx="50"/><text x="50" y="55" text-anchor="middle" fill="white" font-size="40" font-family="Arial">' + authorData.name.charAt(0).toUpperCase() + '</text></svg>';
+                        avatarImg.onload = function() {
+                            avatarImg.style.display = 'block';
+                            if (avatarPlaceholder) avatarPlaceholder.style.display = 'none';
+                        };
+                        avatarImg.onerror = function() {
+                            avatarImg.style.display = 'none';
+                            if (avatarPlaceholder) avatarPlaceholder.style.display = 'flex';
+                        };
+                    } else {
+                        // No photo and no name - just show placeholder
+                        if (avatarPlaceholder) avatarPlaceholder.style.display = 'flex';
+                    }
+                    
+                    // Set bio if available
+                    if (authorData.bio) {
+                        document.getElementById('author-bio').textContent = authorData.bio;
+                    }
+                    
+                    // Set followers count from user document
+                    if (authorData.followers !== undefined) {
+                        document.getElementById('followers-count').textContent = authorData.followers;
+                    }
+                    
+                    // Store author email for blog matching
+                    authorData.authorId = authorId;
+                    window.authorData = authorData;
+                })
+                .catch(err => {
+                    console.error('Error loading author:', err);
+                    document.querySelector('.profile-container').innerHTML = 
+                        '<div class="error-container"><h2>Error</h2><p>Error loading author profile</p><a href="/blog" class="btn">Go Back</a></div>';
+                });
+            
+            // Load author's blogs - get all and filter client-side for better compatibility
+            loadAuthorBlogs(authorId);
+        }
+
+        function loadAuthorBlogs(authorId) {
+            const blogsContainer = document.getElementById('author-blogs');
+            blogsContainer.innerHTML = '<div class="loader-container" style="text-align: center; padding: 40px;"><div class="spinner"></div><p>Loading blogs...</p></div>';
+            
+            // Get author email for matching
+            let authorEmail = null;
+            if (window.authorData && window.authorData.email) {
+                authorEmail = window.authorData.email;
+            }
+            
+            // Get all blogs and filter client-side (more reliable)
+            db.collection('blogs').get()
+                .then(snapshot => {
+                    if (snapshot.empty) {
+                        blogsContainer.innerHTML = '<p class="no-blogs">No blogs published yet.</p>';
+                        return;
+                    }
+                    
+                    let blogs = [];
+                    snapshot.forEach(doc => {
+                        const blog = doc.data();
+                        // Match by authorId OR authorEmail (for backward compatibility)
+                        const isAuthor = blog.authorId === authorId || 
+                                        (authorEmail && blog.authorEmail === authorEmail);
+                        
+                        if (isAuthor) {
+                            blogs.push({ id: doc.id, data: blog });
+                        }
+                    });
+                    
+                    if (blogs.length === 0) {
+                        blogsContainer.innerHTML = '<p class="no-blogs">No blogs published yet.</p>';
+                        return;
+                    }
+                    
+                    // Sort by date
+                    blogs.sort((a, b) => {
+                        const dateA = a.data.publishedTimestamp || 0;
+                        const dateB = b.data.publishedTimestamp || 0;
+                        return dateB - dateA;
+                    });
+                    
+                    // Calculate actual stats from blogs
+                    let totalViews = 0;
+                    let totalLikes = 0;
+                    
+                    let html = '';
+                    blogs.forEach(blogItem => {
+                        const blog = blogItem.data;
+                        const slug = blogItem.id;
+                        const date = blog.publishedAt || 'Recently';
+                        const views = blog.views || 0;
+                        const likes = blog.likes || 0;
+                        
+                        totalViews += views;
+                        totalLikes += likes;
+                        
+                        // Handle banner image - check multiple sources
+                        let blogImg = blog.bannerImage;
+                        if (!blogImg || blogImg === '') {
+                            blogImg = '/img/header.png';
+                        }
+                        // Add leading slash if needed for local images
+                        if (!blogImg.startsWith('/') && !blogImg.startsWith('http') && !blogImg.startsWith('data:')) {
+                            blogImg = '/' + blogImg;
+                        }
+                        
+                        html += `
+                            <div class="user-blog-item">
+                                <img src="${blogImg}" alt="${blog.title || 'Blog Image'}" onerror="this.src='/img/header.png'">
+                                <div class="user-blog-info">
+                                    <h3 class="user-blog-title">${blog.title || 'Untitled'}</h3>
+                                    <p class="user-blog-date">Published: ${date} | 👁 ${views} | ❤️ ${likes}</p>
+                                    <div class="user-blog-actions">
+                                        <a href="/blog/${slug}" class="view-blog-btn">Read More</a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    blogsContainer.innerHTML = html;
+                    
+                    // Update stats with actual counts from blogs
+                    document.getElementById('blogs-count').textContent = blogs.length;
+                    document.getElementById('views-count').textContent = totalViews;
+                    // Note: followers still comes from user document
+                })
+                .catch(err => {
+                    console.error('Error loading blogs:', err);
+                    blogsContainer.innerHTML = '<p class="no-blogs">Error loading blogs.</p>';
+                });
+        }
+
+        function showAuthorError(message) {
+            document.querySelector('.profile-container').innerHTML = 
+                '<div class="error-container"><h2>Error</h2><p>' + message + '</p><a href="/blog" class="btn">Go Back</a></div>';
+        }
+    </script>
+</body>
+</html>

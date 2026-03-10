@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/blog-station.png">
     <title>Blog - BlogStation</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -17,7 +18,8 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="/" class="logo">
+<a href="/" class="logo">
+                <img src="/img/blog-station.png" alt="BlogStation" class="logo-img">
                 <span class="logo-text">Blog</span><span class="logo-accent">Station</span>
             </a>
             <ul class="nav-links">
@@ -34,49 +36,26 @@
         </div>
     </nav>
     
-    <!-- Blog Layout: content left, suggestions right -->
-    <div class="blog-layout">
-        <div class="blog-main">
-            <div class="banner"></div>
-            <div class="blog">
-                <h1 class="title"></h1>
-                <p class="published"><span>Published on </span></p>
-                <hr class="blog-divider">
-                <div class="article">
-                    <!-- Article content will be inserted here -->
-                </div>
-            </div>
-        </div>
-
-        <aside class="blog-sidebar">
-            <!-- Related Blogs Section -->
-            <section class="blogs-section">
-                <!-- Related blogs will be loaded here -->
-            </section>
-        </aside>
+    <!-- Blog Layout: listing layout only -->
+    <div class="blog-layout is-listing-layout">
+        <section class="blogs-section is-listing" id="blogs-section">
+            <!-- Blogs will be loaded here by blog.js -->
+        </section>
     </div>
 
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-brand">
-                    <a href="/" class="logo">
-                        <span class="logo-text">Blog</span><span class="logo-accent">Station</span>
-                    </a>
-                    <p>A platform for writers to share their stories with the world.</p>
-                </div>
-                <div class="footer-links">
-                    <div class="footer-col">
-                        <h4>Platform</h4>
-                        <a href="/blog">Home</a>
-                        <a href="/editor">Write</a>
-                        <a href="/profile">Profile</a>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 BlogStation. All rights reserved.</p>
+            <div class="footer-inner">
+                <a href="/" class="footer-logo">
+                    <span class="logo-text">Blog</span><span class="logo-accent">Station</span>
+                </a>
+                <nav class="footer-nav">
+                    <a href="/blog">Home</a>
+                    <a href="/editor">Write</a>
+                    <a href="/profile">Profile</a>
+                </nav>
+                <p class="footer-copy">&copy; 2026 BlogStation. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -90,4 +69,3 @@
     
 </body>
 </html>
-

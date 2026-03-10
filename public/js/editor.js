@@ -10,6 +10,21 @@ let editingSlug = null; // Track if we're editing an existing blog
 
 // Initialize editor page
 document.addEventListener('DOMContentLoaded', () => {
+    // Logout button
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (auth) {
+                auth.signOut().then(() => {
+                    window.location.replace('/login');
+                }).catch((error) => {
+                    console.error('Logout error:', error);
+                });
+            }
+        });
+    }
+
     // Wait for Firebase to be ready
     const initEditorPage = () => {
         if (!auth) {
@@ -20,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Check auth state
         auth.onAuthStateChanged((user) => {
             if (!user) {
-                window.location.href = '/login';
+                window.location.replace('/login');
                 return;
             }
 
@@ -164,7 +179,7 @@ publishBtn.addEventListener('click', () => {
     const currentUser = auth ? auth.currentUser : null;
     if (!currentUser) {
         alert("Please login to publish a blog!");
-        window.location.href = '/login';
+        window.location.replace('/login');
         return;
     }
 

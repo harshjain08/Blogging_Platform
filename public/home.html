@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/blog-station.png">
     <title>BlogStation - Share Your Stories</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -15,7 +16,8 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="/" class="logo">
+<a href="/" class="logo">
+                <img src="/img/blog-station.png" alt="BlogStation" class="logo-img">
                 <span class="logo-text">Blog</span><span class="logo-accent">Station</span>
             </a>
             <ul class="nav-links">
@@ -147,30 +149,16 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-brand">
-                    <a href="/" class="logo">
-                        <span class="logo-text">Blog</span><span class="logo-accent">Station</span>
-                    </a>
-                    <p>A platform for writers to share their stories with the world.</p>
-                </div>
-                <div class="footer-links">
-                    <div class="footer-col">
-                        <h4>Platform</h4>
-                        <a href="/">Home</a>
-                        <a href="/login">Login</a>
-                        <a href="/signup">Sign Up</a>
-                    </div>
-                    <div class="footer-col">
-                        <h4>Company</h4>
-                        <a href="#">About</a>
-                        <a href="#">Contact</a>
-                        <a href="#">Careers</a>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 BlogStation. All rights reserved.</p>
+            <div class="footer-inner">
+                <a href="/" class="footer-logo">
+                    <span class="logo-text">Blog</span><span class="logo-accent">Station</span>
+                </a>
+                <nav class="footer-nav">
+                    <a href="/">Home</a>
+                    <a href="/login">Login</a>
+                    <a href="/signup">Sign Up</a>
+                </nav>
+                <p class="footer-copy">&copy; 2026 BlogStation. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -181,94 +169,57 @@
 
     <script src="/js/firebase.js"></script>
     <script>
+        function navigateTo(path) {
+            window.location.href = path;
+        }
+
+        // Helper to check auth state reliably
+        function executeWithAuth(callback) {
+            if (typeof auth === 'undefined') {
+                callback(false);
+                return;
+            }
+            
+            // If already initialized
+            if (auth.currentUser) {
+                callback(true);
+                return;
+            }
+            
+            // Wait for auth state
+            const unsubscribe = auth.onAuthStateChanged(user => {
+                unsubscribe(); // Only listen once
+                callback(!!user);
+            });
+        }
+
         // Handle Write button click - require login
         function handleWriteClick(e) {
-            e.preventDefault();
+            if (e) e.preventDefault();
             
-            if (typeof auth !== 'undefined') {
-                auth.onAuthStateChanged((user) => {
-                    if (user) {
-                        window.location.href = '/editor';
-                    } else {
-                        // Store intended destination
-                        sessionStorage.setItem('redirectAfterLogin', '/editor');
-                        window.location.href = '/login';
-                    }
-                });
-            } else {
-                sessionStorage.setItem('redirectAfterLogin', '/editor');
-                window.location.href = '/login';
-            }
+            executeWithAuth((isLoggedIn) => {
+                if (isLoggedIn) {
+                    navigateTo('/editor');
+                } else {
+                    sessionStorage.setItem('redirectAfterLogin', '/editor');
+                    navigateTo('/login');
+                }
+            });
         }
 
         // Handle Read button click - require login
         function handleReadClick(e) {
-            e.preventDefault();
+            if (e) e.preventDefault();
             
-            if (typeof auth !== 'undefined') {
-                auth.onAuthStateChanged((user) => {
-                    if (user) {
-                        window.location.href = '/blog';
-                    } else {
-                        // Store intended destination
-                        sessionStorage.setItem('redirectAfterLogin', '/blog');
-                        window.location.href = '/login';
-                    }
-                });
-            } else {
-                sessionStorage.setItem('redirectAfterLogin', '/blog');
-                window.location.href = '/login';
-            }
+            executeWithAuth((isLoggedIn) => {
+                if (isLoggedIn) {
+                    navigateTo('/blog');
+                } else {
+                    sessionStorage.setItem('redirectAfterLogin', '/blog');
+                    navigateTo('/login');
+                }
+            });
         }
-                sessionStorage.setItem('redirectAfterLogin', '/blog');
-                window.location.href = '/login';
-            }
-        }
-
-        // For feature cards - Write
-        function checkAuthAndWrite() {
-            if (typeof auth !== 'undefined') {
-                auth.onAuthStateChanged((user) => {
-                    if (user) {
-                        window.location.href = '/editor';
-                    } else {
-                        sessionStorage.setItem('redirectAfterLogin', '/editor');
-                        window.location.href = '/login';
-                    }
-                });
-            } else {
-                sessionStorage.setItem('redirectAfterLogin', '/editor');
-                window.location.href = '/login';
-            }
-        }
-
-        // For feature cards - Read
-        function checkAuthAndRead() {
-            if (typeof auth !== 'undefined') {
-                auth.onAuthStateChanged((user) => {
-                    if (user) {
-                        window.location.href = '/blog';
-                    } else {
-                        sessionStorage.setItem('redirectAfterLogin', '/blog');
-                        window.location.href = '/login';
-                    }
-                });
-            } else {
-                sessionStorage.setItem('redirectAfterLogin', '/blog');
-                window.location.href = '/login';
-            }
-        }
-
-        // Update feature card click handlers
-        document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.feature-card');
-            if (cards[0]) {
-                cards[0].onclick = function() { handleWriteClick(new Event('click')); };
-            }
-            if (cards[1]) {
-                cards[1].onclick = function() { handleReadClick(new Event('click')); };
-            }
-        });
     </script>
     
 </body>

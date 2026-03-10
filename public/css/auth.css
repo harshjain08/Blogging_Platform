@@ -139,8 +139,15 @@ body {
     font-weight: 700;
     display: inline-flex;
     align-items: center;
+    gap: 8px;
     margin-bottom: 24px;
     text-decoration: none;
+}
+
+.auth-header .logo-img {
+    height: 36px;
+    width: auto;
+    object-fit: contain;
 }
 
 .logo-text {

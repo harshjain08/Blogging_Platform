@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/blog-station.png">
+    <title>Blog - BlogStation</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/home.css">
+    <link rel="stylesheet" href="/css/editor.css">
+    <link rel="stylesheet" href="/css/blog-details.css">
+
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+<a href="/" class="logo">
+                <img src="/img/blog-station.png" alt="BlogStation" class="logo-img">
+                <span class="logo-text">Blog</span><span class="logo-accent">Station</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="/blog" class="nav-link active">Home</a></li>
+                <li><a href="/editor" class="nav-link">Write</a></li>
+                <li><a href="/profile" class="nav-link">Profile</a></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn-logout">Logout</a></li>
+            </ul>
+            <div class="mobile-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Full Page Loader -->
+    <div id="page-loader" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: var(--light-bg); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.5s ease;">
+        <div class="spinner"></div>
+        <p style="color: var(--text-color); font-size: 1.2rem; margin-top: 15px; font-weight: 500;">Loading blog details...</p>
+    </div>
+
+    <!-- Blog Layout: content left, suggestions right -->
+    <div class="blog-layout" id="blog-content" style="display: none;">
+        <div class="blog-main">
+            <div class="blog-header">
+                <h1 class="title"></h1>
+                <div class="author-info">
+                    <a href="#" class="author-profile-link" id="author-profile-link">
+                        <div class="author-avatar">
+                            <img src="" id="author-avatar-img" alt="Author Avatar" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="display:none;">
+                            <div class="author-avatar-placeholder" style="display:none; width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); align-items:center; justify-content:center; font-size:1.2rem; color:white; font-weight:bold;">
+                                <span id="author-avatar-initial">A</span>
+                            </div>
+                        </div>
+                        <div class="author-details">
+                            <div class="author-name-row">
+                                <span class="author-name" id="author-name-text">Anonymous</span>
+                            </div>
+                            <div class="meta-info">
+                                <span class="published" id="published-text">Recently</span>
+                            </div>
+                        </div>
+                    </a>
+                    <button class="follow-btn">Follow</button>
+                </div>
+                
+                <div class="action-bar top-action-bar">
+                    <div class="action-left">
+                        <button class="action-btn like-btn" title="Like">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                            <span class="like-count">0</span>
+                        </button>
+                        <button class="action-btn comment-btn" title="Comment">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                            <span class="comment-count">0</span>
+                        </button>
+                    </div>
+                    <div class="action-right">
+                        <button class="action-btn save-btn" title="Save">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                        </button>
+                        <button class="action-btn share-btn" title="Share">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                        </button>
+                        <button class="action-btn more-btn" title="More">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="banner"></div>
+
+            <div class="blog">
+                <div class="article">
+                    <!-- Article content will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-inner">
+                <a href="/" class="footer-logo">
+                    <span class="logo-text">Blog</span><span class="logo-accent">Station</span>
+                </a>
+                <nav class="footer-nav">
+                    <a href="/blog">Home</a>
+                    <a href="/editor">Write</a>
+                    <a href="/profile">Profile</a>
+                </nav>
+                <p class="footer-copy">&copy; 2026 BlogStation. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
+
+    <script src="/js/firebase.js"></script>
+    <script src="/js/blog-details.js"></script>
+    
+</body>
+</html>
+

@@ -7,10 +7,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Check if user is already logged in - redirect to blog page
+        // Check if user is already logged in
         auth.onAuthStateChanged((user) => {
             if (user) {
-                window.location.href = '/blog';
+                const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+                sessionStorage.removeItem('redirectAfterLogin');
+                if (redirectUrl) {
+                    window.location.replace(redirectUrl);
+                } else {
+                    window.location.replace('/blog');
+                }
                 return;
             }
         });
@@ -44,9 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         // Redirect to stored URL or default to /blog
                         if (redirectUrl) {
-                            window.location.href = redirectUrl;
+                            window.location.replace(redirectUrl);
                         } else {
-                            window.location.href = '/blog';
+                            window.location.replace('/blog');
                         }
                     })
                     .catch((error) => {

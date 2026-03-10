@@ -4,13 +4,14 @@
 
 /* CSS Variables */
 :root {
-    --primary-color: #4a90e2;
+    --primary-color: #2d3436;
     --secondary-color: #2c3e50;
-    --accent-color: #e74c3c;
+    --accent-color: #6c5ce7;
     --background-light: #f8f9fa;
     --background-white: #ffffff;
     --text-dark: #2c3e50;
-    --text-light: #7f8c8d;
+    --text-light: #636e72;
+    --text-color: #2d3436;
     --border-color: #e0e0e0;
     --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.08);
     --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.12);
@@ -34,6 +35,104 @@ body {
     color: var(--text-dark);
     line-height: 1.6;
     min-height: 100vh;
+}
+
+/* Navigation */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
+    padding: 16px 0;
+    transition: var(--transition);
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.logo-img {
+    height: 36px;
+    width: auto;
+    object-fit: contain;
+}
+
+.logo-text {
+    color: var(--primary-color);
+}
+
+.logo-accent {
+    color: var(--accent-color);
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+}
+
+.nav-link {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-color);
+    transition: var(--transition);
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 50px;
+}
+
+.nav-link::after {
+    display: none;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    background: var(--accent-color);
+    color: var(--white);
+}
+
+.btn-logout {
+    color: #e74c3c;
+}
+
+.btn-logout:hover {
+    background: #e74c3c;
+    color: var(--white) !important;
+}
+
+.mobile-menu {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.mobile-menu span {
+    width: 25px;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 3px;
+    transition: var(--transition);
 }
 
 /* Banner / Cover Image */

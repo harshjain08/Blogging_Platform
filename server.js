@@ -7,31 +7,20 @@ let initial_path = path.join(__dirname, "public");
 const app = express();
 
 app.use(express.json());
-app.use(express.static(initial_path));
 app.use(fileupload());
 
-// Routes
+// Routes (must come before static to handle custom routes)
 app.get("/", (req, res) => res.sendFile(path.join(initial_path, "home.html")));
-app.get("/login", (req, res) =>
-  res.sendFile(path.join(initial_path, "login.html")),
-);
-app.get("/signup", (req, res) =>
-  res.sendFile(path.join(initial_path, "signup.html")),
-);
-app.get("/editor", (req, res) =>
-  res.sendFile(path.join(initial_path, "editor.html")),
-);
-app.get("/profile", (req, res) =>
-  res.sendFile(path.join(initial_path, "profile.html")),
-);
+app.get("/login", (req, res) => res.sendFile(path.join(initial_path, "login.html")));
+app.get("/signup", (req, res) => res.sendFile(path.join(initial_path, "signup.html")));
+app.get("/editor", (req, res) => res.sendFile(path.join(initial_path, "editor.html")));
+app.get("/profile", (req, res) => res.sendFile(path.join(initial_path, "profile.html")));
+app.get("/blog", (req, res) => res.sendFile(path.join(initial_path, "blog.html")));
+app.get("/blog/:id", (req, res) => res.sendFile(path.join(initial_path, "blog-details.html")));
+app.get("/author/:id", (req, res) => res.sendFile(path.join(initial_path, "author.html")));
 
-// Blog routes
-app.get("/blog", (req, res) =>
-  res.sendFile(path.join(initial_path, "blog.html")),
-);
-app.get("/blog/:id", (req, res) =>
-  res.sendFile(path.join(initial_path, "blog.html")),
-);
+// Serve static files after routes
+app.use(express.static(initial_path));
 
 app.post("/upload", (req, res) => {
   let file = req.files.image;
@@ -48,3 +37,4 @@ app.post("/upload", (req, res) => {
 app.listen(3000, () =>
   console.log("Server is running on http://localhost:3000"),
 );
+

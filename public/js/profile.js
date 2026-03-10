@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Check auth state
         auth.onAuthStateChanged((user) => {
             if (!user) {
-                window.location.href = '/login';
+                window.location.replace('/login');
                 return;
             }
 
@@ -40,6 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupEventListeners() {
     // Logout button
     setupLogoutButton();
+    
+    // Tab switching
+    setupTabSwitching();
 
     // Edit profile modal
     const editProfileBtn = document.getElementById('edit-profile-btn');
@@ -150,8 +153,11 @@ function handleAvatarUpload(file) {
             .then(() => {
                 // Update UI directly from Firestore
                 const avatarImg = document.getElementById('user-avatar');
+                const avatarPlaceholder = document.querySelector('.avatar-placeholder');
                 if (avatarImg) {
                     avatarImg.src = base64Data;
+                    avatarImg.style.display = 'block';
+                    if (avatarPlaceholder) avatarPlaceholder.style.display = 'none';
                 }
                 alert('Profile photo updated successfully!');
             })
@@ -198,12 +204,39 @@ function setupLogoutButton() {
 
 // Load user profile data
 function loadUserProfile(user) {
-    console.log('Loading profile for:', user.email);
+    console.log('Loading profile for:', user.email, 'displayName:', user.displayName);
     
-    // Update profile header
-    document.getElementById('user-name').textContent = user.displayName || 'User';
-    document.getElementById('user-email').textContent = user.email || '';
-
+    // Get elements
+    const userNameEl = document.getElementById('user-name');
+    const userEmailEl = document.getElementById('user-email');
+    const userAvatarEl = document.getElementById('user-avatar');
+    const avatarPlaceholder = document.querySelector('.avatar-placeholder');
+    const avatarInitial = document.getElementById('user-avatar-initial');
+    
+    // Get user initial for placeholder
+    const initial = user.displayName ? user.displayName.charAt(0).toUpperCase() : 
+                   (user.email ? user.email.charAt(0).toUpperCase() : 'U');
+    
+    // Update profile header - prioritize displayName from Auth
+    if (userNameEl) {
+        userNameEl.textContent = user.displayName || user.email?.split('@')[0] || 'User';
+    }
+    if (userEmailEl) {
+        userEmailEl.textContent = user.email || '';
+    }
+    
+    // Show placeholder with initial when image is loading (add show class)
+    const avatarInitialContainer = document.getElementById('avatar-initial-container');
+    if (avatarInitial) {
+        avatarInitial.textContent = initial;
+    }
+    if (avatarInitialContainer) {
+        avatarInitialContainer.classList.add('show');
+    }
+    if (userAvatarEl) {
+        userAvatarEl.style.display = 'none';
+    }
+    
     // Try to load user data from Firestore (includes avatar)
     if (db) {
         db.collection('users').doc(user.uid).get()
@@ -215,35 +248,54 @@ function loadUserProfile(user) {
                         user.updateProfile({ displayName: userData.name });
                         document.getElementById('user-name').textContent = userData.name;
                     }
-                    // Load avatar from Firestore (优先)
+                    // Load avatar from Firestore
                     if (userData.photoURL) {
-                        document.getElementById('user-avatar').src = userData.photoURL;
-                    } else if (user.photoURL) {
-                        // Fallback to Auth avatar
-                        document.getElementById('user-avatar').src = user.photoURL;
+                        const avatarImg = document.getElementById('user-avatar');
+                        if (avatarImg) {
+                            avatarImg.src = userData.photoURL;
+                            avatarImg.onload = function() {
+                                avatarImg.style.display = 'block';
+                                if (avatarPlaceholder) avatarPlaceholder.classList.remove('show');
+                            };
+                            avatarImg.onerror = function() {
+                                avatarImg.style.display = 'none';
+                                if (avatarPlaceholder) avatarPlaceholder.classList.add('show');
+                            };
+                        }
                     }
-                    // Show blogs count and views from user document if exists
+                    // Show blogs count, views and followers from user document if exists
                     document.getElementById('blogs-count').textContent = userData.blogsCount || 0;
                     document.getElementById('views-count').textContent = userData.totalViews || 0;
+                    document.getElementById('followers-count').textContent = userData.followers || 0;
                 } else {
-                    console.log('No user document found, showing 0');
-                    // Still try to load avatar from Auth
+                    console.log('No user document found');
+                    // Try Auth avatar
                     if (user.photoURL) {
-                        document.getElementById('user-avatar').src = user.photoURL;
+                        const avatarImg = document.getElementById('user-avatar');
+                        if (avatarImg) {
+                            avatarImg.src = user.photoURL;
+                            avatarImg.onload = function() {
+                                avatarImg.style.display = 'block';
+                                if (avatarPlaceholder) avatarPlaceholder.classList.remove('show');
+                            };
+                        }
                     }
                 }
             })
             .catch((error) => {
                 logError('Error loading user data', error);
-                // Try to load avatar from Auth on error
-                if (user.photoURL) {
-                    document.getElementById('user-avatar').src = user.photoURL;
-                }
             });
     } else {
-        // Fallback: try to load avatar from Auth if DB not available
+        // Try Auth avatar
         if (user.photoURL) {
-            document.getElementById('user-avatar').src = user.photoURL;
+            const avatarImg = document.getElementById('user-avatar');
+            if (avatarImg) {
+                avatarImg.src = user.photoURL;
+                avatarImg.onload = function() {
+                    avatarImg.style.display = 'block';
+                    if (avatarPlaceholder) avatarPlaceholder.classList.remove('show');
+                };
+            }
         }
     }
 
@@ -260,7 +312,7 @@ function loadUserBlogs(userId) {
     }
 
     // Show loading state
-    userBlogsContainer.innerHTML = '<p class="loading-blogs">Loading your blogs...</p>';
+    userBlogsContainer.innerHTML = '<div class="loader-container" style="text-align: center; padding: 40px; font-size: 1.2rem; color: var(--text-color);"><div class="spinner"></div><p>Loading your blogs...</p></div>';
 
     if (!db) {
         console.error('DB not available');
@@ -369,16 +421,13 @@ function loadUserBlogs(userId) {
 
 // Handle logout
 function handleLogout() {
-    if (confirm('Are you sure you want to logout?')) {
-        auth.signOut()
-            .then(() => {
-                window.location.href = '/';
-            })
-            .catch((error) => {
-                logError('Logout error', error);
-                alert('Error logging out. Please try again.');
-            });
-    }
+    auth.signOut()
+        .then(() => {
+            window.location.replace('/login');
+        })
+        .catch((error) => {
+            logError('Logout error', error);
+        });
 }
 
 // Handle profile update
@@ -542,6 +591,125 @@ function handleDeleteBlog(slug) {
         .catch((error) => {
             logError('Error deleting blog', error);
             alert('Error deleting blog. Please try again.');
+        });
+}
+
+// Tab switching functionality
+function setupTabSwitching() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabName = btn.dataset.tab;
+            
+            // Update button states
+            tabButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Show/hide content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                if (content.dataset.content === tabName) {
+                    content.style.display = 'block';
+                } else {
+                    content.style.display = 'none';
+                }
+            });
+            
+            // Load saved blogs if switching to saved tab
+            if (tabName === 'saved') {
+                loadSavedBlogs();
+            }
+        });
+    });
+}
+
+// Load saved blogs
+function loadSavedBlogs() {
+    const savedBlogsContainer = document.getElementById('saved-blogs');
+    if (!savedBlogsContainer) return;
+    
+    // Check if already loaded
+    if (savedBlogsContainer.dataset.loaded === 'true') return;
+    
+    // Show loading state
+    savedBlogsContainer.innerHTML = '<div class="loader-container" style="text-align: center; padding: 40px; font-size: 1.2rem; color: var(--text-color);"><div class="spinner"></div><p>Loading saved blogs...</p></div>';
+    
+    if (!db || !currentUser) {
+        savedBlogsContainer.innerHTML = '<p class="no-blogs">Please login to view saved blogs.</p>';
+        return;
+    }
+    
+    // Get all saved blog IDs from localStorage
+    const savedKeys = Object.keys(localStorage).filter(key => key.startsWith('saved_'));
+    const savedBlogIds = savedKeys.map(key => key.replace('saved_', ''));
+    
+    console.log('Saved blog IDs:', savedBlogIds);
+    
+    if (savedBlogIds.length === 0) {
+        savedBlogsContainer.innerHTML = '<p class="no-blogs">No saved blogs yet. Go to a blog and click the bookmark icon to save it!</p>';
+        savedBlogsContainer.dataset.loaded = 'true';
+        return;
+    }
+    
+    // Fetch saved blogs from database
+    const blogPromises = savedBlogIds.map(blogId => 
+        db.collection('blogs').doc(blogId).get()
+    );
+    
+    Promise.all(blogPromises)
+        .then(results => {
+            const savedBlogs = [];
+            results.forEach(snap => {
+                if (snap.exists) {
+                    savedBlogs.push({ id: snap.id, data: snap.data() });
+                }
+            });
+            
+            // Sort by timestamp (newest first)
+            savedBlogs.sort((a, b) => {
+                const dateA = a.data.publishedTimestamp || 0;
+                const dateB = b.data.publishedTimestamp || 0;
+                return dateB - dateA;
+            });
+            
+            if (savedBlogs.length === 0) {
+                savedBlogsContainer.innerHTML = '<p class="no-blogs">No saved blogs yet. Go to a blog and click the bookmark icon to save it!</p>';
+                return;
+            }
+            
+            let blogsHTML = '';
+            
+            savedBlogs.forEach(blogItem => {
+                const blog = blogItem.data;
+                const slug = blogItem.id;
+                const date = blog.publishedAt ? new Date(blog.publishedAt).toLocaleDateString() : 'Recently';
+                const views = blog.views || 0;
+                
+                let blogImg = blog.bannerImage || '/img/header.png';
+                if (!blogImg.startsWith('/') && !blogImg.startsWith('http') && !blogImg.startsWith('data:')) {
+                    blogImg = '/' + blogImg;
+                }
+                
+                blogsHTML += `
+                    <div class="user-blog-item">
+                        <img src="${blogImg}" alt="${blog.title}">
+                        <div class="user-blog-info">
+                            <h3 class="user-blog-title">${blog.title || 'Untitled'}</h3>
+                            <p class="user-blog-date">Published: ${date} | Views: ${views}</p>
+                            <div class="user-blog-actions">
+                                <a href="/blog/${slug}" class="view-blog-btn">View</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            savedBlogsContainer.innerHTML = blogsHTML;
+            savedBlogsContainer.dataset.loaded = 'true';
+        })
+        .catch((error) => {
+            logError('Error loading saved blogs', error);
+            savedBlogsContainer.innerHTML = '<p class="no-blogs">Error loading saved blogs. Please try again.</p>';
         });
 }
 

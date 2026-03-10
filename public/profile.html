@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/blog-station.png">
     <title>My Profile - BlogStation</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/profile.css">
     <link rel="stylesheet" href="/css/home.css">
+    <link rel="stylesheet" href="/css/profile.css">
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <a href="/" class="logo">
+<a href="/" class="logo">
+                <img src="/img/blog-station.png" alt="BlogStation" class="logo-img">
                 <span class="logo-text">Blog</span><span class="logo-accent">Station</span>
             </a>
             <ul class="nav-links">
-                <li><a href="/" class="nav-link">Home</a></li>
+                <li><a href="/blog" class="nav-link">Home</a></li>
                 <li><a href="/editor" class="nav-link">Write</a></li>
                 <li><a href="/profile" class="nav-link active">Profile</a></li>
                 <li><a href="#" id="logout-btn" class="nav-link btn-logout">Logout</a></li>
@@ -32,8 +34,11 @@
         <div class="profile-card">
             <div class="profile-header">
                 <div class="avatar-container">
-                    <img src="/img/logo.png" id="user-avatar" class="avatar" alt="User">
-                    <button class="avatar-edit-btn">📷</button>
+                    <div class="avatar-placeholder" id="avatar-initial-container">
+                        <span id="user-avatar-initial"></span>
+                    </div>
+                    <img id="user-avatar" class="avatar" alt="" style="display: none;">
+                    <button id="change-avatar-btn" class="avatar-edit-btn">📷</button>
                 </div>
                 <h1 id="user-name">Loading...</h1>
                 <p id="user-email">email@example.com</p>
@@ -48,15 +53,43 @@
                     <span class="stat-number" id="views-count">0</span>
                     <span class="stat-label">Views</span>
                 </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="followers-count">0</span>
+                    <span class="stat-label">Followers</span>
+                </div>
             </div>
 
             <div class="profile-content">
-                <h2>Your Stories</h2>
-                <div id="user-blogs" class="user-blogs-list">
-                    </div>
+                <div class="profile-tabs">
+                    <button class="tab-btn active" data-tab="stories">Your Stories</button>
+                    <button class="tab-btn" data-tab="saved">Saved</button>
+                </div>
+                
+                <div id="user-blogs" class="user-blogs-list tab-content" data-content="stories">
+                </div>
+                
+                <div id="saved-blogs" class="user-blogs-list tab-content" data-content="saved" style="display: none;">
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-inner">
+                <a href="/" class="footer-logo">
+                    <span class="logo-text">Blog</span><span class="logo-accent">Station</span>
+                </a>
+                <nav class="footer-nav">
+                    <a href="/blog">Home</a>
+                    <a href="/editor">Write</a>
+                    <a href="/profile">Profile</a>
+                </nav>
+                <p class="footer-copy">&copy; 2026 BlogStation. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
     <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
