@@ -162,22 +162,65 @@
                     
                     const authorData = doc.data();
                     
-                    // Set author name
-                    document.getElementById('author-name').textContent = authorData.name || 'Anonymous';
-                    document.title = (authorData.name || 'Author') + ' - BlogStation';
+                    // Set author name - check multiple possible field names
+                    let authorName = authorData.name || authorData.displayName || 
+                                     (authorData.email ? authorData.email.split('@')[0] : null);
+
+                    // Store authorData globally for blog matching
+                    authorData.authorId = authorId;
+                    window.authorData = authorData;
+
+                    const applyAuthorName = (name) => {
+                        const finalName = name || 'Anonymous';
+                        document.getElementById('author-name').textContent = finalName;
+                        document.title = finalName + ' - BlogStation';
+
+                        // Update avatar initial
+                        const avatarInitial = document.getElementById('author-avatar-initial');
+                        if (avatarInitial) {
+                            avatarInitial.textContent = finalName.charAt(0).toUpperCase();
+                        }
+
+                        // If no photo, generate SVG avatar from initial
+                        const avatarImg = document.getElementById('author-avatar');
+                        const avatarPlaceholder = document.querySelector('.avatar-placeholder');
+                        if (avatarImg && !authorData.photoURL && finalName !== 'Anonymous') {
+                            avatarImg.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%233498db" width="100" height="100" rx="50"/><text x="50" y="55" text-anchor="middle" fill="white" font-size="40" font-family="Arial">' + finalName.charAt(0).toUpperCase() + '</text></svg>';
+                            avatarImg.onload = function() {
+                                avatarImg.style.display = 'block';
+                                if (avatarPlaceholder) avatarPlaceholder.style.display = 'none';
+                            };
+                        }
+                    };
+
+                    if (authorName) {
+                        applyAuthorName(authorName);
+                    } else {
+                        // Fallback: get authorName from their blog documents
+                        db.collection('blogs').where('authorId', '==', authorId).limit(1).get()
+                            .then(snapshot => {
+                                if (!snapshot.empty) {
+                                    const blogData = snapshot.docs[0].data();
+                                    authorName = blogData.authorName || blogData.author ||
+                                                 (blogData.authorEmail ? blogData.authorEmail.split('@')[0] : null);
+                                    
+                                    // Save name back to Firestore for future
+                                    if (authorName) {
+                                        db.collection('users').doc(authorId).update({ name: authorName })
+                                            .catch(() => {}); // silent fail
+                                    }
+                                }
+                                applyAuthorName(authorName);
+                            })
+                            .catch(() => applyAuthorName(null));
+                    }
                     
-                    // Set avatar - check multiple sources
+                    // Set avatar - check photo from Firestore
                     const avatarImg = document.getElementById('author-avatar');
                     const avatarPlaceholder = document.querySelector('.avatar-placeholder');
                     const avatarInitial = document.getElementById('author-avatar-initial');
                     
-                    // Show placeholder with initial first
-                    if (avatarInitial && authorData.name) {
-                        avatarInitial.textContent = authorData.name.charAt(0).toUpperCase();
-                    }
-                    if (avatarPlaceholder) {
-                        avatarPlaceholder.style.display = 'flex';
-                    }
+                    if (avatarPlaceholder) avatarPlaceholder.style.display = 'flex';
                     avatarImg.style.display = 'none';
                     
                     if (authorData.photoURL) {
@@ -190,20 +233,6 @@
                             avatarImg.style.display = 'none';
                             if (avatarPlaceholder) avatarPlaceholder.style.display = 'flex';
                         };
-                    } else if (authorData.name) {
-                        // Generate avatar from initials if no photo
-                        avatarImg.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%233498db" width="100" height="100" rx="50"/><text x="50" y="55" text-anchor="middle" fill="white" font-size="40" font-family="Arial">' + authorData.name.charAt(0).toUpperCase() + '</text></svg>';
-                        avatarImg.onload = function() {
-                            avatarImg.style.display = 'block';
-                            if (avatarPlaceholder) avatarPlaceholder.style.display = 'none';
-                        };
-                        avatarImg.onerror = function() {
-                            avatarImg.style.display = 'none';
-                            if (avatarPlaceholder) avatarPlaceholder.style.display = 'flex';
-                        };
-                    } else {
-                        // No photo and no name - just show placeholder
-                        if (avatarPlaceholder) avatarPlaceholder.style.display = 'flex';
                     }
                     
                     // Set bio if available
@@ -215,10 +244,6 @@
                     if (authorData.followers !== undefined) {
                         document.getElementById('followers-count').textContent = authorData.followers;
                     }
-                    
-                    // Store author email for blog matching
-                    authorData.authorId = authorId;
-                    window.authorData = authorData;
                     
                     // Setup follow button after loading author profile
                     setupAuthorFollowButton(authorId);
