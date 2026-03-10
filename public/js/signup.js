@@ -97,6 +97,57 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         }
+
+        // ---- Google Sign-Up ----
+        const googleBtn = document.getElementById('google-signup-btn');
+        const googleError = document.getElementById('google-error');
+
+        if (googleBtn) {
+            googleBtn.addEventListener('click', () => {
+                googleBtn.disabled = true;
+                googleBtn.querySelector('span').textContent = 'Signing up...';
+                if (googleError) {
+                    googleError.classList.remove('show');
+                    googleError.textContent = '';
+                }
+
+                const provider = new firebase.auth.GoogleAuthProvider();
+                provider.setCustomParameters({ prompt: 'select_account' });
+
+                auth.signInWithPopup(provider)
+                    .then((result) => {
+                        const user = result.user;
+                        const isNewUser = result.additionalUserInfo && result.additionalUserInfo.isNewUser;
+
+                        // Always ensure Firestore doc exists for Google users
+                        if (db) {
+                            db.collection('users').doc(user.uid).set({
+                                name: user.displayName || '',
+                                email: user.email || '',
+                                createdAt: new Date().toISOString(),
+                                photoURL: user.photoURL || null,
+                                bio: '',
+                                blogsCount: 0
+                            }, { merge: true });
+                        }
+
+                        const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+                        sessionStorage.removeItem('redirectAfterLogin');
+                        window.location.replace(redirectUrl || '/blog');
+                    })
+                    .catch((error) => {
+                        console.error('Google signup error:', error);
+                        if (googleError) {
+                            googleError.textContent = error.code === 'auth/popup-closed-by-user'
+                                ? 'Sign-up popup was closed. Please try again.'
+                                : 'Google sign-up failed. Please try again.';
+                            googleError.classList.add('show');
+                        }
+                        googleBtn.disabled = false;
+                        googleBtn.querySelector('span').textContent = 'Continue with Google';
+                    });
+            });
+        }
     }
 
     initSignup();

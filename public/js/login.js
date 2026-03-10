@@ -64,6 +64,66 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
             });
         }
+
+        // ---- Google Sign-In ----
+        const googleBtn = document.getElementById('google-login-btn');
+        const googleError = document.getElementById('google-error');
+
+        if (googleBtn) {
+            googleBtn.addEventListener('click', () => {
+                googleBtn.disabled = true;
+                googleBtn.querySelector('span').textContent = 'Signing in...';
+                if (googleError) {
+                    googleError.classList.remove('show');
+                    googleError.textContent = '';
+                }
+
+                const provider = new firebase.auth.GoogleAuthProvider();
+                provider.setCustomParameters({ prompt: 'select_account' });
+
+                auth.signInWithPopup(provider)
+                    .then((result) => {
+                        const user = result.user;
+                        const isNewUser = result.additionalUserInfo && result.additionalUserInfo.isNewUser;
+
+                        // Save to Firestore if new user
+                        if (isNewUser && db) {
+                            db.collection('users').doc(user.uid).set({
+                                name: user.displayName || '',
+                                email: user.email || '',
+                                createdAt: new Date().toISOString(),
+                                photoURL: user.photoURL || null,
+                                bio: '',
+                                blogsCount: 0
+                            }, { merge: true });
+                        }
+
+                        const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+                        sessionStorage.removeItem('redirectAfterLogin');
+                        window.location.replace(redirectUrl || '/blog');
+                    })
+                    .catch((error) => {
+                        console.error('Google login error code:', error.code);
+                        console.error('Google login error message:', error.message);
+                        if (googleError) {
+                            let msg = 'Google sign-in failed. Please try again.';
+                            if (error.code === 'auth/popup-closed-by-user') {
+                                msg = 'Sign-in popup was closed. Please try again.';
+                            } else if (error.code === 'auth/unauthorized-domain') {
+                                msg = 'Domain not authorized. Please add localhost in Firebase Console → Authentication → Settings → Authorized Domains.';
+                            } else if (error.code === 'auth/operation-not-allowed') {
+                                msg = 'Google Sign-In is not enabled. Please enable it in Firebase Console → Authentication → Sign-in method → Google.';
+                            } else if (error.code === 'auth/popup-blocked') {
+                                msg = 'Popup was blocked by browser. Please allow popups for this site.';
+                            }
+                            googleError.textContent = msg;
+                            googleError.classList.add('show');
+                        }
+                        googleBtn.disabled = false;
+                        googleBtn.querySelector('span').textContent = 'Continue with Google';
+                    });
+            });
+        }
     };
 
     initLogin();

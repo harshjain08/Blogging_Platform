@@ -75,19 +75,25 @@ function updateNavbarForAuth(user) {
     const signupLink = document.getElementById('signup-link');
     const profileLink = document.getElementById('profile-link');
     const logoutLink = document.getElementById('logout-link');
-    
+
+    // Hide/show the parent <li> to avoid layout gaps
+    const loginLi = loginLink ? loginLink.parentElement : null;
+    const signupLi = signupLink ? signupLink.parentElement : null;
+    const profileLi = profileLink ? profileLink.parentElement : null;
+    const logoutLi = logoutLink ? logoutLink.parentElement : null;
+
     if (user) {
-        // User is logged in - show profile and logout
-        if (loginLink) loginLink.style.display = 'none';
-        if (signupLink) signupLink.style.display = 'none';
-        if (profileLink) profileLink.style.display = 'block';
-        if (logoutLink) logoutLink.style.display = 'block';
+        // User is logged in - show profile and logout, hide login/signup
+        if (loginLi) loginLi.style.display = 'none';
+        if (signupLi) signupLi.style.display = 'none';
+        if (profileLi) profileLi.style.display = 'list-item';
+        if (logoutLi) logoutLi.style.display = 'list-item';
     } else {
-        // User not logged in - show login and signup
-        if (loginLink) loginLink.style.display = 'block';
-        if (signupLink) signupLink.style.display = 'block';
-        if (profileLink) profileLink.style.display = 'none';
-        if (logoutLink) logoutLink.style.display = 'none';
+        // User not logged in - show login and signup, hide profile/logout
+        if (loginLi) loginLi.style.display = 'list-item';
+        if (signupLi) signupLi.style.display = 'list-item';
+        if (profileLi) profileLi.style.display = 'none';
+        if (logoutLi) logoutLi.style.display = 'none';
     }
 }
 

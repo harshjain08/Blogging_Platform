@@ -467,6 +467,14 @@ textarea::-webkit-scrollbar-thumb:hover {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .nav-links {
+        display: none;
+    }
+
+    .mobile-menu {
+        display: flex;
+    }
+
     .banner {
         height: 250px;
     }

@@ -592,3 +592,34 @@ body {
     opacity: 0.6;
     cursor: not-allowed;
 }
+
+/* Author follow button - centered below name */
+.author-follow-center {
+    display: block;
+    margin: 16px auto 0;
+    padding: 10px 30px;
+    font-size: 1rem;
+    border-radius: 25px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.author-follow-center:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.author-follow-center.following {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.author-follow-center:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}

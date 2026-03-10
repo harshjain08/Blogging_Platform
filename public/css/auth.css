@@ -33,11 +33,11 @@ body {
     font-family: var(--font-primary);
     background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    padding: 20px;
+    padding: 40px 20px;
     position: relative;
-    overflow: hidden;
+    overflow-y: auto;
 }
 
 /* Background Animation */
@@ -388,7 +388,9 @@ body {
     to { transform: rotate(360deg); }
 }
 
-/* Responsive */
+/* ========================================
+   Responsive
+   ======================================== */
 @media (max-width: 480px) {
     .auth-card {
         padding: 32px 24px;
@@ -418,3 +420,71 @@ body {
     }
 }
 
+/* ========================================
+   Google Sign-In Button
+   ======================================== */
+.google-btn-wrapper {
+    margin-bottom: 8px;
+}
+
+.btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 13px 20px;
+    background: #ffffff;
+    color: #3c4043;
+    font-family: var(--font-primary);
+    font-size: 15px;
+    font-weight: 600;
+    border: 2px solid #dadce0;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-google::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: #f8f9fa;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.btn-google:hover {
+    border-color: #b0b8c4;
+    box-shadow: 0 4px 16px rgba(66, 133, 244, 0.2);
+    transform: translateY(-2px);
+}
+
+.btn-google:hover::before {
+    opacity: 1;
+}
+
+.btn-google:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.btn-google:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-google svg {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.btn-google span {
+    position: relative;
+    z-index: 1;
+}
