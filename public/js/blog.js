@@ -15,7 +15,49 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Setup mobile menu
+    setupMobileMenu();
 });
+
+// Mobile Menu Toggle
+function setupMobileMenu() {
+    const mobileMenuBtn = document.querySelector('.mobile-menu');
+    const navLinks = document.querySelector('.nav-links');
+    
+    if (mobileMenuBtn && navLinks) {
+        mobileMenuBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            mobileMenuBtn.classList.toggle('active');
+            navLinks.classList.toggle('mobile-active');
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!mobileMenuBtn.contains(e.target) && !navLinks.contains(e.target)) {
+                mobileMenuBtn.classList.remove('active');
+                navLinks.classList.remove('mobile-active');
+            }
+        });
+        
+        // Close menu when window is resized to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                mobileMenuBtn.classList.remove('active');
+                navLinks.classList.remove('mobile-active');
+            }
+        });
+        
+        // Close menu when clicking a nav link
+        const navLinksItems = navLinks.querySelectorAll('.nav-link');
+        navLinksItems.forEach(link => {
+            link.addEventListener('click', function() {
+                mobileMenuBtn.classList.remove('active');
+                navLinks.classList.remove('mobile-active');
+            });
+        });
+    }
+}
 
 // Initialize the blog page
 document.addEventListener('DOMContentLoaded', () => {

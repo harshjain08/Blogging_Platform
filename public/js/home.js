@@ -4,6 +4,7 @@
 // Setup navbar - check if user is logged in
 document.addEventListener('DOMContentLoaded', function() {
     setupNavbar();
+    setupMobileMenu();
     
     // Listen for auth state changes to update navbar
     if (typeof auth !== 'undefined') {
@@ -28,6 +29,45 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Mobile Menu Toggle
+function setupMobileMenu() {
+    const mobileMenuBtn = document.querySelector('.mobile-menu');
+    const navLinks = document.querySelector('.nav-links');
+    
+    if (mobileMenuBtn && navLinks) {
+        mobileMenuBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            mobileMenuBtn.classList.toggle('active');
+            navLinks.classList.toggle('mobile-active');
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!mobileMenuBtn.contains(e.target) && !navLinks.contains(e.target)) {
+                mobileMenuBtn.classList.remove('active');
+                navLinks.classList.remove('mobile-active');
+            }
+        });
+        
+        // Close menu when window is resized to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                mobileMenuBtn.classList.remove('active');
+                navLinks.classList.remove('mobile-active');
+            }
+        });
+        
+        // Close menu when clicking a nav link
+        const navLinksItems = navLinks.querySelectorAll('.nav-link');
+        navLinksItems.forEach(link => {
+            link.addEventListener('click', function() {
+                mobileMenuBtn.classList.remove('active');
+                navLinks.classList.remove('mobile-active');
+            });
+        });
+    }
+}
 
 // Update navbar based on auth state
 function updateNavbarForAuth(user) {
@@ -56,6 +96,21 @@ function setupNavbar() {
     // Check initial auth state
     if (typeof auth !== 'undefined' && auth.currentUser) {
         updateNavbarForAuth(auth.currentUser);
+    }
+    
+    // Handle logout link click
+    const logoutLink = document.getElementById('logout-link');
+    if (logoutLink) {
+        logoutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (typeof auth !== 'undefined') {
+                auth.signOut().then(() => {
+                    window.location.href = '/';
+                }).catch((error) => {
+                    console.error('Logout error:', error);
+                });
+            }
+        });
     }
 }
 

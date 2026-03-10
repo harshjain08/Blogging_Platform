@@ -72,6 +72,35 @@
 
     <script src="/js/firebase.js"></script>
     <script src="/js/editor.js"></script>
+    <script>
+        // Mobile Menu Toggle for Editor page
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuBtn = document.querySelector('.mobile-menu');
+            const navLinks = document.querySelector('.nav-links');
+            
+            if (mobileMenuBtn && navLinks) {
+                mobileMenuBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    mobileMenuBtn.classList.toggle('active');
+                    navLinks.classList.toggle('mobile-active');
+                });
+                
+                document.addEventListener('click', function(e) {
+                    if (!mobileMenuBtn.contains(e.target) && !navLinks.contains(e.target)) {
+                        mobileMenuBtn.classList.remove('active');
+                        navLinks.classList.remove('mobile-active');
+                    }
+                });
+                
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 768) {
+                        mobileMenuBtn.classList.remove('active');
+                        navLinks.classList.remove('mobile-active');
+                    }
+                });
+            }
+        });
+    </script>
 
 </body>
 </html>

@@ -39,8 +39,13 @@
                         <span id="author-avatar-initial">A</span>
                     </div>
                 </div>
-                <h1 id="author-name">Loading...</h1>
-                <p id="author-bio"></p>
+                <div class="author-header-row">
+                    <div>
+                        <h1 id="author-name">Loading...</h1>
+                        <p id="author-bio"></p>
+                    </div>
+                    <button id="author-follow-btn" class="follow-btn" style="display:none;">Follow</button>
+                </div>
             </div>
 
             <div class="profile-stats">
@@ -87,6 +92,35 @@
     <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
     <script src="/js/firebase.js"></script>
+    <script>
+        // Mobile Menu Toggle for Author page
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuBtn = document.querySelector('.mobile-menu');
+            const navLinks = document.querySelector('.nav-links');
+            
+            if (mobileMenuBtn && navLinks) {
+                mobileMenuBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    mobileMenuBtn.classList.toggle('active');
+                    navLinks.classList.toggle('mobile-active');
+                });
+                
+                document.addEventListener('click', function(e) {
+                    if (!mobileMenuBtn.contains(e.target) && !navLinks.contains(e.target)) {
+                        mobileMenuBtn.classList.remove('active');
+                        navLinks.classList.remove('mobile-active');
+                    }
+                });
+                
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 768) {
+                        mobileMenuBtn.classList.remove('active');
+                        navLinks.classList.remove('mobile-active');
+                    }
+                });
+            }
+        });
+    </script>
     <script>
         // Author Profile Page
         let currentUser = null;
@@ -189,6 +223,9 @@
                     // Store author email for blog matching
                     authorData.authorId = authorId;
                     window.authorData = authorData;
+                    
+                    // Setup follow button after loading author profile
+                    setupAuthorFollowButton(authorId);
                 })
                 .catch(err => {
                     console.error('Error loading author:', err);
@@ -297,6 +334,127 @@
         function showAuthorError(message) {
             document.querySelector('.profile-container').innerHTML = 
                 '<div class="error-container"><h2>Error</h2><p>' + message + '</p><a href="/blog" class="btn">Go Back</a></div>';
+        }
+
+        // Follow functionality for author page
+        function setupAuthorFollowButton(authorId) {
+            const followBtn = document.getElementById('author-follow-btn');
+            if (!followBtn || !authorId) return;
+
+            // Check if current user is logged in
+            auth.onAuthStateChanged((user) => {
+                currentUser = user;
+                
+                if (!user) {
+                    // Not logged in - hide follow button
+                    followBtn.style.display = 'none';
+                    return;
+                }
+
+                // Don't allow following yourself
+                if (user.uid === authorId) {
+                    followBtn.style.display = 'none';
+                    return;
+                }
+
+                // Show the follow button
+                followBtn.style.display = 'block';
+
+                // Check Firebase for actual follow status
+                checkAuthorFollowStatus(authorId, followBtn);
+
+                // Add click handler
+                followBtn.addEventListener('click', () => {
+                    handleAuthorFollowClick(authorId, followBtn);
+                });
+            });
+        }
+
+        // Check follow status from Firebase
+        function checkAuthorFollowStatus(authorId, followBtn) {
+            if (!currentUser || !db) return;
+
+            db.collection('users').doc(authorId).collection('followers').doc(currentUser.uid).get()
+                .then(doc => {
+                    const isFollowing = doc.exists;
+                    updateAuthorFollowButtonUI(followBtn, isFollowing);
+                })
+                .catch(err => {
+                    console.error('Error checking follow status:', err);
+                    updateAuthorFollowButtonUI(followBtn, false);
+                });
+        }
+
+        // Update follow button UI
+        function updateAuthorFollowButtonUI(followBtn, isFollowing) {
+            if (isFollowing) {
+                followBtn.textContent = 'Following';
+                followBtn.classList.add('following');
+            } else {
+                followBtn.textContent = 'Follow';
+                followBtn.classList.remove('following');
+            }
+        }
+
+        // Handle follow click
+        function handleAuthorFollowClick(authorId, followBtn) {
+            if (!currentUser) {
+                alert('Please login to follow authors');
+                return;
+            }
+
+            followBtn.disabled = true;
+
+            db.collection('users').doc(authorId).collection('followers').doc(currentUser.uid).get()
+                .then(doc => {
+                    const isCurrentlyFollowing = doc.exists;
+
+                    if (isCurrentlyFollowing) {
+                        // Unfollow
+                        return db.collection('users').doc(authorId).collection('followers').doc(currentUser.uid).delete()
+                            .then(() => {
+                                return db.collection('users').doc(authorId).update({
+                                    followers: firebase.firestore.FieldValue.increment(-1)
+                                });
+                            })
+                            .then(() => {
+                                updateAuthorFollowButtonUI(followBtn, false);
+                                // Update followers count display
+                                const followersCountEl = document.getElementById('followers-count');
+                                if (followersCountEl) {
+                                    let currentCount = parseInt(followersCountEl.textContent) || 0;
+                                    followersCountEl.textContent = Math.max(0, currentCount);
+                                }
+                            });
+                    } else {
+                        // Follow
+                        return db.collection('users').doc(authorId).collection('followers').doc(currentUser.uid).set({
+                            followedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            followerId: currentUser.uid
+                        })
+                        .then(() => {
+                            return db.collection('users').doc(authorId).update({
+                                followers: firebase.firestore.FieldValue.increment(1)
+                            });
+                        })
+                        .then(() => {
+                            updateAuthorFollowButtonUI(followBtn, true);
+                            // Update followers count display
+                            const followersCountEl = document.getElementById('followers-count');
+                            if (followersCountEl) {
+                                let currentCount = parseInt(followersCountEl.textContent) || 0;
+                                followersCountEl.textContent = currentCount + 1;
+                            }
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error('Error in follow/unfollow:', err);
+                    alert('Error updating follow status');
+                })
+                .finally(() => {
+                    followBtn.disabled = false;
+                });
         }
     </script>
 </body>

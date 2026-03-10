@@ -18,7 +18,49 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+    
+    // Setup mobile menu
+    setupMobileMenu();
 });
+
+// Mobile Menu Toggle
+function setupMobileMenu() {
+    const mobileMenuBtn = document.querySelector('.mobile-menu');
+    const navLinks = document.querySelector('.nav-links');
+    
+    if (mobileMenuBtn && navLinks) {
+        mobileMenuBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            mobileMenuBtn.classList.toggle('active');
+            navLinks.classList.toggle('mobile-active');
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!mobileMenuBtn.contains(e.target) && !navLinks.contains(e.target)) {
+                mobileMenuBtn.classList.remove('active');
+                navLinks.classList.remove('mobile-active');
+            }
+        });
+        
+        // Close menu when window is resized to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                mobileMenuBtn.classList.remove('active');
+                navLinks.classList.remove('mobile-active');
+            }
+        });
+        
+        // Close menu when clicking a nav link
+        const navLinksItems = navLinks.querySelectorAll('.nav-link');
+        navLinksItems.forEach(link => {
+            link.addEventListener('click', function() {
+                mobileMenuBtn.classList.remove('active');
+                navLinks.classList.remove('mobile-active');
+            });
+        });
+    }
+}
 
 // Initialize the blog page
 document.addEventListener('DOMContentLoaded', () => {
@@ -133,8 +175,8 @@ const setupBlog = (data, blogId) => {
     }
     if (publishedText) publishedText.textContent = data.publishedAt || 'Recently';
 
-    // Author profile photo from Firebase users collection
-    if (authorAvatarImg && data.authorId) {
+    // Author profile photo and followers count from Firebase users collection
+    if (data.authorId) {
         const avatarPlaceholder = document.querySelector('.author-avatar-placeholder');
         const avatarInitial = document.getElementById('author-avatar-initial');
         
@@ -147,25 +189,39 @@ const setupBlog = (data, blogId) => {
         }
         authorAvatarImg.style.display = 'none';
         
+        // Get user data from Firebase
         db.collection('users').doc(data.authorId).get().then(userDoc => {
-            if (userDoc.exists && userDoc.data().photoURL) {
-                authorAvatarImg.src = userDoc.data().photoURL;
-                authorAvatarImg.onload = function() {
-                    authorAvatarImg.style.display = 'block';
-                    if (avatarPlaceholder) avatarPlaceholder.style.display = 'none';
-                };
-                authorAvatarImg.onerror = function() {
-                    authorAvatarImg.style.display = 'none';
-                    if (avatarPlaceholder) avatarPlaceholder.style.display = 'flex';
-                };
-            } else if (data.authorAvatar) {
-                authorAvatarImg.src = data.authorAvatar;
-                authorAvatarImg.onload = function() {
-                    authorAvatarImg.style.display = 'block';
-                    if (avatarPlaceholder) avatarPlaceholder.style.display = 'none';
-                };
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                
+                // Load avatar
+                if (userData.photoURL) {
+                    authorAvatarImg.src = userData.photoURL;
+                    authorAvatarImg.onload = function() {
+                        authorAvatarImg.style.display = 'block';
+                        if (avatarPlaceholder) avatarPlaceholder.style.display = 'none';
+                    };
+                    authorAvatarImg.onerror = function() {
+                        authorAvatarImg.style.display = 'none';
+                        if (avatarPlaceholder) avatarPlaceholder.style.display = 'flex';
+                    };
+                } else if (data.authorAvatar) {
+                    authorAvatarImg.src = data.authorAvatar;
+                    authorAvatarImg.onload = function() {
+                        authorAvatarImg.style.display = 'block';
+                        if (avatarPlaceholder) avatarPlaceholder.style.display = 'none';
+                    };
+                }
+                
+                // Load and display followers count from Firebase
+                const followersCountEl = document.querySelector('.followers-count');
+                if (followersCountEl) {
+                    const followersCount = userData.followers || 0;
+                    followersCountEl.textContent = followersCount + ' Followers';
+                }
             }
-        }).catch(() => {
+        }).catch(err => {
+            console.error('Error loading author data:', err);
             if (data.authorAvatar) {
                 authorAvatarImg.src = data.authorAvatar;
                 authorAvatarImg.onload = function() {
@@ -428,29 +484,178 @@ function setupFollow(blogId, data) {
     const followBtn = document.querySelector('.follow-btn');
     if (!followBtn || !data.authorId) return;
 
+    // Store authorId on the button for later use
+    followBtn.dataset.authorId = data.authorId;
+    
     const followKey = 'following_' + data.authorId;
-    const isFollowing = localStorage.getItem(followKey) === '1';
-    if (isFollowing) { followBtn.textContent = 'Following'; followBtn.classList.add('following'); }
+    
+    // Hide button initially until we check Firebase
+    followBtn.style.opacity = '0.5';
+    
+    // First check Firebase for actual following status
+    checkFollowStatusFromFirebase(data.authorId, followBtn, followKey);
+
+    // Restore opacity after checking
+    followBtn.style.opacity = '1';
 
     followBtn.addEventListener('click', () => {
-        const currently = localStorage.getItem(followKey) === '1';
-        db.collection('users').doc(data.authorId).get().then(doc => {
-            const followers = (doc.exists && doc.data().followers) || 0;
-            const newFollowers = currently ? Math.max(0, followers - 1) : followers + 1;
-            const updateData = { followers: newFollowers };
-            return db.collection('users').doc(data.authorId).set(updateData, { merge: true });
-        }).then(() => {
-            if (currently) {
-                localStorage.removeItem(followKey);
-                followBtn.textContent = 'Follow';
-                followBtn.classList.remove('following');
-            } else {
-                localStorage.setItem(followKey, '1');
-                followBtn.textContent = 'Following';
-                followBtn.classList.add('following');
-            }
-        });
+        handleFollowClick(data.authorId, followBtn, followKey);
     });
+}
+
+// Check if user is actually following from Firebase
+// This function ALWAYS checks Firebase to get the real state, not localStorage
+function checkFollowStatusFromFirebase(authorId, followBtn, followKey) {
+    if (!currentUser || !db) {
+        // Not logged in, show follow button as not following
+        updateFollowButtonUI(followBtn, false);
+        return;
+    }
+
+    // Don't allow following yourself
+    if (currentUser.uid === authorId) {
+        followBtn.style.display = 'none';
+        return;
+    }
+
+    // ALWAYS check Firebase to get the actual follow status
+    // This ensures consistency across all devices
+    db.collection('users').doc(authorId).collection('followers').doc(currentUser.uid).get()
+        .then(doc => {
+            const isFollowing = doc.exists;
+            console.log('Checking follow status from Firebase:', isFollowing);
+            
+            // Sync localStorage with Firebase to ensure consistency
+            if (isFollowing) {
+                localStorage.setItem(followKey, '1');
+            } else {
+                localStorage.removeItem(followKey);
+            }
+            updateFollowButtonUI(followBtn, isFollowing);
+        })
+        .catch(err => {
+            console.error('Error checking follow status:', err);
+            // On error, show button as not following (safest default)
+            localStorage.removeItem(followKey);
+            updateFollowButtonUI(followBtn, false);
+        });
+}
+
+// Update follow button UI
+function updateFollowButtonUI(followBtn, isFollowing) {
+    if (isFollowing) {
+        followBtn.textContent = 'Following';
+        followBtn.classList.add('following');
+    } else {
+        followBtn.textContent = 'Follow';
+        followBtn.classList.remove('following');
+    }
+    
+    // Update followers count display if exists
+    updateFollowersCountDisplay();
+}
+
+// Update the followers count in the UI from Firebase
+function updateFollowersCountDisplay() {
+    const followBtn = document.querySelector('.follow-btn');
+    if (!followBtn || !followBtn.dataset.authorId) return;
+    
+    const authorId = followBtn.dataset.authorId;
+    
+    db.collection('users').doc(authorId).get()
+        .then(doc => {
+            if (doc.exists) {
+                const followersCountEl = document.querySelector('.followers-count');
+                if (followersCountEl) {
+                    const count = doc.data().followers || 0;
+                    followersCountEl.textContent = count + ' Followers';
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Error updating followers count:', err);
+        });
+}
+
+// Handle follow click - Always check Firebase first to ensure consistent counts across devices
+function handleFollowClick(authorId, followBtn, followKey) {
+    if (!currentUser) {
+        showToast('Please login to follow authors');
+        return;
+    }
+
+    // Don't allow following yourself
+    if (currentUser.uid === authorId) {
+        showToast('You cannot follow yourself');
+        return;
+    }
+
+    // Show loading state
+    followBtn.disabled = true;
+    const originalText = followBtn.textContent;
+
+    // ALWAYS get the current state from Firebase - don't rely on localStorage
+    // This ensures consistent counts across all devices
+    db.collection('users').doc(authorId).collection('followers').doc(currentUser.uid).get()
+        .then(doc => {
+            const isCurrentlyFollowing = doc.exists;
+            console.log('Current follow status from Firebase:', isCurrentlyFollowing);
+            
+            if (isCurrentlyFollowing) {
+                // Unfollow - Remove from followers subcollection
+                return db.collection('users').doc(authorId).collection('followers').doc(currentUser.uid).delete()
+                    .then(() => {
+                        // Get current follower count from Firebase and decrement
+                        return db.collection('users').doc(authorId).get();
+                    })
+                    .then(userDoc => {
+                        if (userDoc.exists) {
+                            const currentFollowers = userDoc.data().followers || 0;
+                            // Use Firestore increment for atomic update
+                            return db.collection('users').doc(authorId).update({
+                                followers: firebase.firestore.FieldValue.increment(-1)
+                            });
+                        }
+                    })
+                    .then(() => {
+                        // Update localStorage to reflect the actual state
+                        localStorage.removeItem(followKey);
+                        updateFollowButtonUI(followBtn, false);
+                        showToast('Unfollowed author');
+                    });
+            } else {
+                // Follow - Add to followers subcollection
+                return db.collection('users').doc(authorId).collection('followers').doc(currentUser.uid).set({
+                    followedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    followerId: currentUser.uid
+                })
+                .then(() => {
+                    // Get current follower count from Firebase and increment
+                    return db.collection('users').doc(authorId).get();
+                })
+                .then(userDoc => {
+                    if (userDoc.exists) {
+                        // Use Firestore increment for atomic update
+                        return db.collection('users').doc(authorId).update({
+                            followers: firebase.firestore.FieldValue.increment(1)
+                        });
+                    }
+                })
+                .then(() => {
+                    // Update localStorage to reflect the actual state
+                    localStorage.setItem(followKey, '1');
+                    updateFollowButtonUI(followBtn, true);
+                    showToast('Following author');
+                });
+            }
+        })
+        .catch(err => {
+            console.error('Error in follow/unfollow:', err);
+            showToast('Error updating follow status');
+        })
+        .finally(() => {
+            followBtn.disabled = false;
+        });
 }
 
 // ── Save / Bookmark ─────────────────────────────────

@@ -21,10 +21,11 @@
                 <span class="logo-text">Blog</span><span class="logo-accent">Station</span>
             </a>
             <ul class="nav-links">
-                <li><a href="/" class="nav-link active">Home</a></li>
-                <li><a href="/login" class="nav-link" id="login-link">Login</a></li>
-                <li><a href="/signup" class="nav-link btn-signup" id="signup-link">Sign Up</a></li>
-                <li><a href="/profile" class="nav-link" id="profile-link" style="display:none;">Profile</a></li>
+                <li><a href="/" class="nav-link active" onclick="navigateTo('/')">Home</a></li>
+                <li><a href="/blog" class="nav-link" onclick="navigateTo('/blog')">Blogs</a></li>
+                <li><a href="/login" class="nav-link" id="login-link" onclick="navigateTo('/login')">Login</a></li>
+                <li><a href="/signup" class="nav-link btn-signup" id="signup-link" onclick="navigateTo('/signup')">Sign Up</a></li>
+                <li><a href="/profile" class="nav-link" id="profile-link" style="display:none;" onclick="navigateTo('/profile')">Profile</a></li>
                 <li><a href="#" class="nav-link" id="logout-link" style="display:none;">Logout</a></li>
             </ul>
             <div class="mobile-menu">
@@ -168,7 +169,38 @@
     <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
 
     <script src="/js/firebase.js"></script>
+    <script src="/js/home.js"></script>
     <script>
+        // Mobile Menu Toggle - Inline for immediate functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuBtn = document.querySelector('.mobile-menu');
+            const navLinks = document.querySelector('.nav-links');
+            
+            if (mobileMenuBtn && navLinks) {
+                mobileMenuBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    mobileMenuBtn.classList.toggle('active');
+                    navLinks.classList.toggle('mobile-active');
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!mobileMenuBtn.contains(e.target) && !navLinks.contains(e.target)) {
+                        mobileMenuBtn.classList.remove('active');
+                        navLinks.classList.remove('mobile-active');
+                    }
+                });
+                
+                // Close menu when window is resized to desktop
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 768) {
+                        mobileMenuBtn.classList.remove('active');
+                        navLinks.classList.remove('mobile-active');
+                    }
+                });
+            }
+        });
+        
         function navigateTo(path) {
             window.location.href = path;
         }
